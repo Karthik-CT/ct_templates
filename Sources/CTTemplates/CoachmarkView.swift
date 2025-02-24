@@ -1,6 +1,6 @@
 import UIKit
 
-class CoachmarkView: UIView {
+public class CoachmarkView: UIView {
     
     var targetView: UIView
     var title: String

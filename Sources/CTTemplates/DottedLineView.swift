@@ -1,6 +1,6 @@
 import UIKit
 
-class DottedLineView: UIView {
+public class DottedLineView: UIView {
     
     private var startPoint: CGPoint
     private var endPoint: CGPoint
