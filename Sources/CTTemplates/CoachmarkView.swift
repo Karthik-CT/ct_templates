@@ -10,9 +10,9 @@ public class CoachmarkView: UIView {
     var onNext: (() -> Void)?
     var onSkip: (() -> Void)?
     
-    private let stepIndicatorLabel = UILabel()
+    public let stepIndicatorLabel = UILabel()
     
-    init(targetView: UIView, title: String, message: String, currentIndex: Int, totalSteps: Int, frame: CGRect) {
+    public override init(targetView: UIView, title: String, message: String, currentIndex: Int, totalSteps: Int, frame: CGRect) {
         self.targetView = targetView
         self.title = title
         self.message = message
@@ -22,7 +22,7 @@ public class CoachmarkView: UIView {
         setupView()
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
