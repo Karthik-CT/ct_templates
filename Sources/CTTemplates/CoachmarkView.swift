@@ -64,19 +64,6 @@ public class CoachmarkView: UIView {
         self.addSubview(tooltipView)
 
         configureStepIndicator(in: tooltipView)
-
-//        let startX = targetFrame.midX
-//        let endX = tooltipView.frame.midX
-//        let commonX = (startX + endX) / 2
-//
-//        let startPoint = CGPoint(x: commonX, y: arrowStartY)
-//        let endPoint = CGPoint(x: commonX, y: arrowEndY)
-//
-//        let dottedLineView = DottedLineView(startPoint: startPoint, endPoint: endPoint)
-//        dottedLineView.frame = self.bounds
-//        dottedLineView.isUserInteractionEnabled = false
-//
-//        self.addSubview(dottedLineView)
         
         let startX = targetFrame.midX
         let endX = tooltipView.frame.midX
@@ -131,14 +118,6 @@ public class CoachmarkView: UIView {
         buttonsContainer.spacing = 10
         
         let skipButton = UIButton(type: .system)
-//        var skipConfig = UIButton.Configuration.filled()
-//        skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
-//        skipConfig.baseForegroundColor = .black
-//        skipConfig.cornerStyle = .medium
-//        skipConfig.title = "Skip"
-//        skipButton.configuration = skipConfig
-//        skipButton.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
-        
         if #available(iOS 15.0, *) {
             var skipConfig = UIButton.Configuration.filled()
             skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
@@ -147,7 +126,6 @@ public class CoachmarkView: UIView {
             skipConfig.title = "Skip"
             skipButton.configuration = skipConfig
         } else {
-            // Fallback for iOS 14 and below
             skipButton.setTitle("Skip", for: .normal)
             skipButton.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
             skipButton.setTitleColor(.black, for: .normal)
