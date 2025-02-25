@@ -6,18 +6,18 @@ public class DottedLineView: UIView {
     public var endPoint: CGPoint
     public let yellowDotLayer = CAShapeLayer()
     
-    init(startPoint: CGPoint, endPoint: CGPoint) {
+    public init(startPoint: CGPoint, endPoint: CGPoint) {
         self.startPoint = startPoint
         self.endPoint = endPoint
         super.init(frame: CGRect.zero)
         self.backgroundColor = .clear
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func draw(_ rect: CGRect) {
+    public override func draw(_ rect: CGRect) {
         super.draw(rect)
         
         guard let context = UIGraphicsGetCurrentContext() else { return }
@@ -33,7 +33,7 @@ public class DottedLineView: UIView {
         context.strokePath()
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         drawYellowDot()
     }
@@ -67,7 +67,7 @@ public class DottedLineView: UIView {
 }
 
 extension UIColor {
-    convenience init(hex: String, alpha: CGFloat = 1.0) {
+    public convenience init(hex: String, alpha: CGFloat = 1.0) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
 
