@@ -131,13 +131,28 @@ public class CoachmarkView: UIView {
         buttonsContainer.spacing = 10
         
         let skipButton = UIButton(type: .system)
-        var skipConfig = UIButton.Configuration.filled()
-        skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
-        skipConfig.baseForegroundColor = .black
-        skipConfig.cornerStyle = .medium
-        skipConfig.title = "Skip"
-        skipButton.configuration = skipConfig
-        skipButton.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
+//        var skipConfig = UIButton.Configuration.filled()
+//        skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
+//        skipConfig.baseForegroundColor = .black
+//        skipConfig.cornerStyle = .medium
+//        skipConfig.title = "Skip"
+//        skipButton.configuration = skipConfig
+//        skipButton.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
+        
+        if #available(iOS 15.0, *) {
+            var skipConfig = UIButton.Configuration.filled()
+            skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
+            skipConfig.baseForegroundColor = .black
+            skipConfig.cornerStyle = .medium
+            skipConfig.title = "Skip"
+            skipButton.configuration = skipConfig
+        } else {
+            // Fallback for iOS 14 and below
+            skipButton.setTitle("Skip", for: .normal)
+            skipButton.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
+            skipButton.setTitleColor(.black, for: .normal)
+            skipButton.layer.cornerRadius = 8
+        }
         
         let nextButton = UIButton(type: .system)
         nextButton.setTitle(currentIndex == totalSteps ? "Ready to Explore" : "Next", for: .normal)
