@@ -19,7 +19,7 @@ let package = Package(
         .target(
             name: "CTTemplates",
             dependencies: [],
-            path: "Sources",
+            path: "Sources/CTTemplates",
             swiftSettings: [.define("SWIFT_PACKAGE")], // Helps avoid import issues
             linkerSettings: [
                 .linkedFramework("UIKit") // ✅ Ensure UIKit is linked
