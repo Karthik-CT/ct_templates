@@ -7,8 +7,8 @@ public class CoachmarkView: UIView {
     var message: String
     var currentIndex: Int
     var totalSteps: Int
-    var onNext: (() -> Void)?
-    var onSkip: (() -> Void)?
+    public var onNext: (() -> Void)?
+    public var onSkip: (() -> Void)?
     
     public let stepIndicatorLabel = UILabel()
     
