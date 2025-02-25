@@ -12,7 +12,7 @@ public class CoachmarkView: UIView {
     
     public let stepIndicatorLabel = UILabel()
     
-    public override init(targetView: UIView, title: String, message: String, currentIndex: Int, totalSteps: Int, frame: CGRect) {
+    public init(targetView: UIView, title: String, message: String, currentIndex: Int, totalSteps: Int, frame: CGRect) {
         self.targetView = targetView
         self.title = title
         self.message = message
