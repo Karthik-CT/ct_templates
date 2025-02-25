@@ -2,9 +2,9 @@ import UIKit
 
 public class DottedLineView: UIView {
     
-    private var startPoint: CGPoint
-    private var endPoint: CGPoint
-    private let yellowDotLayer = CAShapeLayer()
+    public var startPoint: CGPoint
+    public var endPoint: CGPoint
+    public let yellowDotLayer = CAShapeLayer()
     
     init(startPoint: CGPoint, endPoint: CGPoint) {
         self.startPoint = startPoint
@@ -38,7 +38,7 @@ public class DottedLineView: UIView {
         drawYellowDot()
     }
     
-    private func drawYellowDot() {
+    public func drawYellowDot() {
         yellowDotLayer.removeFromSuperlayer() // Remove any existing dots
         
         let circleRadius: CGFloat = 15
@@ -57,7 +57,7 @@ public class DottedLineView: UIView {
         self.layer.addSublayer(yellowDotLayer)
     }
     
-    private func shouldPlaceDotAtStartPoint() -> Bool {
+    public func shouldPlaceDotAtStartPoint() -> Bool {
         guard let superview = self.superview else { return false }
         let screenHeight = UIScreen.main.bounds.height
         let bottomThreshold = screenHeight * 0.75 // Adjusted threshold dynamically

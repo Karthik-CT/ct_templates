@@ -26,7 +26,7 @@ public class CoachmarkView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func setupView() {
+    public func setupView() {
         self.backgroundColor = UIColor.black.withAlphaComponent(0.7)
         
         let path = UIBezierPath(rect: self.bounds)
@@ -102,7 +102,7 @@ public class CoachmarkView: UIView {
 
 
     // Updated Tooltip Positioning
-    private func createTooltipView(atY yPosition: CGFloat) -> UIView {
+    public func createTooltipView(atY yPosition: CGFloat) -> UIView {
         let tooltipView = UIView(frame: CGRect(x: 20, y: yPosition, width: self.frame.width - 40, height: 145))
         tooltipView.backgroundColor = .white
         tooltipView.layer.cornerRadius = 12
@@ -162,7 +162,7 @@ public class CoachmarkView: UIView {
     }
 
     
-    private func configureStepIndicator(in tooltipView: UIView) {
+    public func configureStepIndicator(in tooltipView: UIView) {
         stepIndicatorLabel.text = "\(currentIndex)/\(totalSteps)"
         stepIndicatorLabel.font = UIFont.systemFont(ofSize: 10, weight: .medium)
         stepIndicatorLabel.textColor = UIColor.gray
@@ -180,12 +180,12 @@ public class CoachmarkView: UIView {
         ])
     }
     
-    @objc private func skipTapped() {
+    @objc public func skipTapped() {
         onSkip?()
         self.removeFromSuperview()
     }
     
-    @objc private func nextTapped() {
+    @objc public func nextTapped() {
         onNext?()
         self.removeFromSuperview()
     }
