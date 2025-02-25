@@ -1,13 +1,13 @@
-//
-//  File.swift
-//  CTTemplates
-//
-//  Created by Karthik Iyer on 25/02/25.
-//
+import UIKit
 
 public class CoachmarkManager {
+    // ✅ Mark 'shared' as public
     public static let shared = CoachmarkManager()
+    
+    // ✅ Make the initializer public if needed outside the module
+    public init() {}
 
+    // ✅ Mark the function as public
     public func showCoachmarks(fromJson jsonString: String, in parentView: UIView) {
         guard let data = jsonString.data(using: .utf8) else { return }
         
@@ -31,3 +31,4 @@ public class CoachmarkManager {
         }
     }
 }
+
