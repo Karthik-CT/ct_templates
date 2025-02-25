@@ -14,11 +14,12 @@ public class CoachmarkManager {
             let coachmarksData = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
             guard let steps = coachmarksData else { return }
 
-            var currentIndex = 0 // ✅ Keeps track of step index
+            var currentIndex = 0
 
             for step in steps {
                 if let targetId = step["targetViewId"] as? String,
-                   let targetView = parentView.viewWithTag(Int(targetId) ?? -1) { // ✅ Access `viewWithTag` safely
+                   let targetView = findViewByIdentifier(targetId, in: parentView) {  // ✅ Find view dynamically
+
                     let title = step["title"] as? String ?? ""
                     let message = step["message"] as? String ?? ""
 
@@ -26,8 +27,8 @@ public class CoachmarkManager {
                         targetView: targetView,
                         title: title,
                         message: message,
-                        currentIndex: currentIndex + 1,  // ✅ Fix: Pass currentIndex
-                        totalSteps: steps.count,        // ✅ Fix: Pass totalSteps
+                        currentIndex: currentIndex + 1,
+                        totalSteps: steps.count,
                         frame: parentView.bounds
                     )
 
@@ -39,4 +40,18 @@ public class CoachmarkManager {
             print("Error parsing JSON: \(error)")
         }
     }
+
+    // ✅ Helper function to find a view by accessibility identifier
+    private func findViewByIdentifier(_ identifier: String, in view: UIView) -> UIView? {
+        for subview in view.subviews {
+            if subview.accessibilityIdentifier == identifier {
+                return subview
+            }
+            if let foundView = findViewByIdentifier(identifier, in: subview) {
+                return foundView
+            }
+        }
+        return nil
+    }
+
 }
