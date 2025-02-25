@@ -6,7 +6,7 @@
 //
 
 public class CoachmarkManager {
-    static let shared = CoachmarkManager()
+    public static let shared = CoachmarkManager()
 
     public func showCoachmarks(fromJson jsonString: String, in parentView: UIView) {
         guard let data = jsonString.data(using: .utf8) else { return }
