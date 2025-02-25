@@ -5,10 +5,10 @@
 //  Created by Karthik Iyer on 25/02/25.
 //
 
-class CoachmarkManager {
+public class CoachmarkManager {
     static let shared = CoachmarkManager()
 
-    func showCoachmarks(fromJson jsonString: String, in parentView: UIView) {
+    public func showCoachmarks(fromJson jsonString: String, in parentView: UIView) {
         guard let data = jsonString.data(using: .utf8) else { return }
         
         do {
