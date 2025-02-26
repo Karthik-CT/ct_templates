@@ -7,51 +7,52 @@ public class CoachmarkManager {
 
     private init() {} // ✅ Prevents direct instantiation outside the class
 
+    var currentCoachmarkIndex = 0
+    var coachmarksData: [[String: Any]] = []
+
     public func showCoachmarks(fromJson jsonString: String, in parentView: UIView) {
         guard let data = jsonString.data(using: .utf8) else { return }
 
         do {
-            let coachmarksData = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
-            guard let steps = coachmarksData else { return }
-
-            var currentIndex = 0
-
-            for step in steps {
-                if let targetId = step["targetViewId"] as? String,
-                   let targetView = findViewByIdentifier(targetId, in: parentView) {  // ✅ Find view dynamically
-
-                    let title = step["title"] as? String ?? ""
-                    let message = step["message"] as? String ?? ""
-
-                    let coachmark = CoachmarkView(
-                        targetView: targetView,
-                        title: title,
-                        message: message,
-                        currentIndex: currentIndex + 1,
-                        totalSteps: steps.count,
-                        frame: parentView.bounds
-                    )
-
-                    parentView.addSubview(coachmark)
-                    currentIndex += 1
-                }
-            }
+            coachmarksData = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] ?? []
+            currentCoachmarkIndex = 0
+            showNextCoachmark(in: parentView)
         } catch {
             print("Error parsing JSON: \(error)")
         }
     }
 
-    // ✅ Helper function to find a view by accessibility identifier
-    private func findViewByIdentifier(_ identifier: String, in view: UIView) -> UIView? {
-        for subview in view.subviews {
-            if subview.accessibilityIdentifier == identifier {
-                return subview
-            }
-            if let foundView = findViewByIdentifier(identifier, in: subview) {
-                return foundView
+    // ✅ Show next coachmark one at a time
+    public func showNextCoachmark(in parentView: UIView) {
+        if currentCoachmarkIndex >= coachmarksData.count { return }  // Stop if all steps are done
+
+        let step = coachmarksData[currentCoachmarkIndex]
+        
+        if let targetId = step["targetViewId"] as? String,
+           let targetView = findViewByIdentifier(targetId, in: parentView) {
+
+            let title = step["title"] as? String ?? ""
+            let message = step["message"] as? String ?? ""
+
+            let coachmark = CoachmarkView(
+                targetView: targetView,
+                title: title,
+                message: message,
+                currentIndex: currentCoachmarkIndex + 1,
+                totalSteps: coachmarksData.count,
+                frame: parentView.bounds
+            )
+
+            parentView.addSubview(coachmark)
+
+            // ✅ Wait for user action before proceeding to next step
+            coachmark.onDismiss = { [weak self] in
+                coachmark.removeFromSuperview()
+                self?.currentCoachmarkIndex += 1
+                self?.showNextCoachmark(in: parentView)
             }
         }
-        return nil
     }
+
 
 }
