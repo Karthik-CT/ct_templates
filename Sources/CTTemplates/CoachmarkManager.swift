@@ -53,6 +53,19 @@ public class CoachmarkManager {
             }
         }
     }
+    
+    // Recursively search for a view with the given accessibilityIdentifier.
+        public func findViewByIdentifier(_ identifier: String, in view: UIView) -> UIView? {
+            if view.accessibilityIdentifier == identifier {
+                return view
+            }
+            for subview in view.subviews {
+                if let found = findViewByIdentifier(identifier, in: subview) {
+                    return found
+                }
+            }
+            return nil
+        }
 
 
 }
