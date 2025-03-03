@@ -1,185 +1,134 @@
 import UIKit
 
-public class CoachmarkView: UIView {
+@MainActor
+public class CoachmarkManager {
     
-    var targetView: UIView
-    var title: String
-    var message: String
-    var currentIndex: Int
-    var totalSteps: Int
-    public var onNext: (() -> Void)?
-    public var onSkip: (() -> Void)?
+    public static let shared = CoachmarkManager()
+    private var coachmarksData: [[String: Any]] = []
+    private var currentCoachmarkIndex: Int = 0
+    private var parentView: UIView?
     
-    public let stepIndicatorLabel = UILabel()
+    private init() {}
     
-    public init(targetView: UIView, title: String, message: String, currentIndex: Int, totalSteps: Int, frame: CGRect) {
-        self.targetView = targetView
-        self.title = title
-        self.message = message
-        self.currentIndex = currentIndex
-        self.totalSteps = totalSteps
-        super.init(frame: frame)
-        setupView()
-    }
-    
-    public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public func setupView() {
-        self.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+    public func showCoachmarks(fromJson json: Any, in parentView: UIView) {
+        self.parentView = parentView
+        self.currentCoachmarkIndex = 0
         
-        let path = UIBezierPath(rect: self.bounds)
-        let targetFrame = targetView.convert(targetView.bounds, to: self)
-        let cutoutPath = UIBezierPath(roundedRect: targetFrame.insetBy(dx: -8, dy: -8), cornerRadius: 10)
-        path.append(cutoutPath)
-        path.usesEvenOddFillRule = true
+        var jsonDict: [String: Any] = [:]
         
-        let maskLayer = CAShapeLayer()
-        maskLayer.path = path.cgPath
-        maskLayer.fillRule = .evenOdd
-        self.layer.mask = maskLayer
-        
-        let screenHeight = UIScreen.main.bounds.height
-        let isTargetNearBottom = targetFrame.maxY + 200 > screenHeight // Adjusted threshold
-
-        let tooltipYPosition: CGFloat
-        let arrowStartY: CGFloat
-        let arrowEndY: CGFloat
-        let gap: CGFloat = 40 // **Increased gap between target and tooltip**
-
-        if isTargetNearBottom {
-            // Show tooltip above target
-            tooltipYPosition = targetFrame.minY - 165 - gap // Increased gap
-            arrowStartY = tooltipYPosition + 10
-            arrowEndY = targetFrame.midY - 5
+        if let arrayJson = json as? [[String: Any]], let firstItem = arrayJson.first {
+            jsonDict = firstItem
+        } else if let dictJson = json as? [String: Any] {
+            jsonDict = dictJson
         } else {
-            // Show tooltip below target
-            tooltipYPosition = targetFrame.maxY + gap // Increased gap
-            arrowStartY = targetFrame.maxY + 5
-            arrowEndY = tooltipYPosition - 5
-        }
-
-        let tooltipView = createTooltipView(atY: tooltipYPosition)
-        self.addSubview(tooltipView)
-
-        configureStepIndicator(in: tooltipView)
-        
-        let startX = targetFrame.midX
-        let endX = tooltipView.frame.midX
-        let commonX = (startX + endX) / 2
-
-        let startPoint: CGPoint
-        let endPoint: CGPoint
-
-        if isTargetNearBottom {
-            startPoint = CGPoint(x: commonX, y: tooltipView.frame.maxY - 5) // Start from tooltip bottom
-            endPoint = CGPoint(x: commonX, y: targetFrame.midY) // End at target
-        } else {
-            startPoint = CGPoint(x: commonX, y: targetFrame.maxY + 5) // Start from target bottom
-            endPoint = CGPoint(x: commonX, y: tooltipView.frame.minY) // End at tooltip top
-        }
-
-        let dottedLineView = DottedLineView(startPoint: startPoint, endPoint: endPoint)
-        dottedLineView.frame = self.bounds
-        dottedLineView.isUserInteractionEnabled = false
-        self.addSubview(dottedLineView)
-        
-    }
-
-
-    // Updated Tooltip Positioning
-    public func createTooltipView(atY yPosition: CGFloat) -> UIView {
-        let tooltipView = UIView(frame: CGRect(x: 20, y: yPosition, width: self.frame.width - 40, height: 145))
-        tooltipView.backgroundColor = .white
-        tooltipView.layer.cornerRadius = 12
-        tooltipView.layer.shadowColor = UIColor.black.cgColor
-        tooltipView.layer.shadowOpacity = 0.2
-        tooltipView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        tooltipView.layer.shadowRadius = 4
-        
-        let titleLabel = UILabel(frame: CGRect(x: 16, y: 12, width: tooltipView.frame.width - 32, height: 22))
-        titleLabel.text = title
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 16)
-        titleLabel.textColor = .black
-        tooltipView.addSubview(titleLabel)
-        
-        let messageLabel = UILabel(frame: CGRect(x: 16, y: 38, width: tooltipView.frame.width - 32, height: 40))
-        messageLabel.text = message
-        messageLabel.font = UIFont.systemFont(ofSize: 14)
-        messageLabel.textColor = .darkGray
-        messageLabel.numberOfLines = 0
-        tooltipView.addSubview(messageLabel)
-        
-        let buttonsContainer = UIStackView(frame: CGRect(x: 16, y: 95, width: tooltipView.frame.width - 32, height: 35))
-        buttonsContainer.axis = .horizontal
-        buttonsContainer.alignment = .fill
-        buttonsContainer.distribution = .fillEqually
-        buttonsContainer.spacing = 10
-        
-        let skipButton = UIButton(type: .system)
-        if #available(iOS 15.0, *) {
-            var skipConfig = UIButton.Configuration.filled()
-            skipConfig.baseBackgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
-            skipConfig.baseForegroundColor = .black
-            skipConfig.cornerStyle = .medium
-            skipConfig.title = "Skip"
-            skipButton.configuration = skipConfig
-        } else {
-            skipButton.setTitle("Skip", for: .normal)
-            skipButton.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
-            skipButton.setTitleColor(.black, for: .normal)
-            skipButton.layer.cornerRadius = 8
+            return
         }
         
-        let nextButton = UIButton(type: .system)
-        nextButton.setTitle(currentIndex == totalSteps ? "Ready to Explore" : "Next", for: .normal)
-        nextButton.setTitleColor(.white, for: .normal)
-        nextButton.backgroundColor = .red
-        nextButton.layer.cornerRadius = 5
-        nextButton.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
-        
-        buttonsContainer.addArrangedSubview(skipButton)
-        buttonsContainer.addArrangedSubview(nextButton)
-        tooltipView.addSubview(buttonsContainer)
-        
-        if currentIndex == totalSteps {
-            skipButton.alpha = 0
-            skipButton.isUserInteractionEnabled = false
-        } else {
-            skipButton.alpha = 1
-            skipButton.isUserInteractionEnabled = true
+        if let ndJsonString = jsonDict["nd_json"] as? String,
+           let ndJsonData = ndJsonString.data(using: .utf8),
+           let parsedNdJson = try? JSONSerialization.jsonObject(with: ndJsonData) as? [String: Any] {
+            jsonDict = parsedNdJson
+        } else if let ndJsonDict = jsonDict["nd_json"] as? [String: Any] {
+            jsonDict = ndJsonDict
         }
         
-        return tooltipView
-    }
-
-    
-    public func configureStepIndicator(in tooltipView: UIView) {
-        stepIndicatorLabel.text = "\(currentIndex)/\(totalSteps)"
-        stepIndicatorLabel.font = UIFont.systemFont(ofSize: 10, weight: .medium)
-        stepIndicatorLabel.textColor = UIColor.gray
-        stepIndicatorLabel.textAlignment = .right
-        stepIndicatorLabel.backgroundColor = .clear
-        stepIndicatorLabel.translatesAutoresizingMaskIntoConstraints = false
+        let coachmarkCount: Int
+        if let count = jsonDict["nd_coachmarks_count"] as? Int {
+            coachmarkCount = count
+        } else if let countString = jsonDict["nd_coachmarks_count"] as? String, let countInt = Int(countString) {
+            coachmarkCount = countInt
+        } else {
+            return
+        }
         
-        // Add to the tooltip view
-        tooltipView.addSubview(stepIndicatorLabel)
+        var steps: [[String: Any]] = []
+        for index in 1...coachmarkCount {
+            let idKey = "nd_view\(index)_id"
+            let titleKey = "nd_view\(index)_title"
+            let subtitleKey = "nd_view\(index)_subtitle"
+            
+            if let targetId = jsonDict[idKey] as? String,
+               let title = jsonDict[titleKey] as? String,
+               let message = jsonDict[subtitleKey] as? String
+            {
+                steps.append([
+                    "targetViewId": targetId,
+                    "title": title,
+                    "message": message
+                ])
+            } else {
+                print("Skipping step \(index): Missing id/title/subtitle in JSON")
+            }
+        }
         
-        // Constraints to position at the top-right corner of the tooltip view
-        NSLayoutConstraint.activate([
-            stepIndicatorLabel.topAnchor.constraint(equalTo: tooltipView.topAnchor, constant: 8),
-            stepIndicatorLabel.trailingAnchor.constraint(equalTo: tooltipView.trailingAnchor, constant: -12)
-        ])
+        self.coachmarksData = steps
+        
+        let positiveButtonText = jsonDict["nd_positive_button_text"] as? String ?? "Next"
+        let skipButtonText = jsonDict["nd_skip_button_text"] as? String ?? "Skip"
+        let positiveButtonBackgroundColor = jsonDict["nd_positive_button_background_color"] as? String ?? "#E83938"
+        let skipButtonBackgroundColor = jsonDict["nd_skip_button_background_color"] as? String ?? "#FFFFFF"
+        let positiveButtonTextColor = jsonDict["nd_positive_button_text_color"] as? String ?? "#FFFFFF"
+        let skipButtonTextColor = jsonDict["nd_skip_button_text_color"] as? String ?? "#000000"
+        let finalButtonText = jsonDict["nd_final_positive_button_text"] as? String ?? "Ready to Explore"
+        
+        print("positiveButtonText1: \(positiveButtonText)")
+        
+        showNextCoachmark(positiveButtonText: positiveButtonText, skipButtonText: skipButtonText, positiveButtonBackgroundColor: positiveButtonBackgroundColor, skipButtonBackgroundColor: skipButtonBackgroundColor, positiveButtonTextColor: positiveButtonTextColor, skipButtonTextColor: skipButtonTextColor, finalButtonText: finalButtonText)
     }
     
-    @objc public func skipTapped() {
-        onSkip?()
-        self.removeFromSuperview()
+    private func showNextCoachmark(positiveButtonText: String, skipButtonText: String, positiveButtonBackgroundColor: String, skipButtonBackgroundColor:String, positiveButtonTextColor: String, skipButtonTextColor: String, finalButtonText: String) {
+        guard currentCoachmarkIndex < coachmarksData.count, let parentView = self.parentView else {
+            return
+        }
+        
+        let step = coachmarksData[currentCoachmarkIndex]
+        if let targetId = step["targetViewId"] as? String,
+           let targetView = findViewByIdentifier(targetId, in: parentView) {
+            let title = step["title"] as? String ?? ""
+            let message = step["message"] as? String ?? ""
+            let coachmark = CoachmarkView(
+                targetView: targetView,
+                title: title,
+                message: message,
+                currentIndex: currentCoachmarkIndex + 1,
+                totalSteps: coachmarksData.count,
+                frame: parentView.bounds,
+                positiveButtonText: positiveButtonText,
+                skipButtonText: skipButtonText,
+                positiveButtonBackgroundColor: positiveButtonBackgroundColor,
+                skipButtonBackgroundColor: skipButtonBackgroundColor,
+                positiveButtonTextColor: positiveButtonTextColor,
+                skipButtonTextColor: skipButtonTextColor,
+                finalButtonText: finalButtonText
+            )
+            
+            coachmark.onNext = { [weak self, weak coachmark] in
+                coachmark?.removeFromSuperview()
+                self?.currentCoachmarkIndex += 1
+                self?.showNextCoachmark(positiveButtonText: positiveButtonText, skipButtonText: skipButtonText, positiveButtonBackgroundColor: positiveButtonBackgroundColor, skipButtonBackgroundColor: skipButtonBackgroundColor, positiveButtonTextColor: positiveButtonTextColor, skipButtonTextColor: skipButtonTextColor, finalButtonText: finalButtonText)
+            }
+            
+            coachmark.onSkip = { [weak self, weak coachmark] in
+                coachmark?.removeFromSuperview()
+                self?.currentCoachmarkIndex = self?.coachmarksData.count ?? 0
+            }
+            
+            parentView.addSubview(coachmark)
+        } else {
+            currentCoachmarkIndex += 1
+            showNextCoachmark(positiveButtonText: positiveButtonText, skipButtonText: skipButtonText, positiveButtonBackgroundColor: positiveButtonBackgroundColor, skipButtonBackgroundColor: skipButtonBackgroundColor, positiveButtonTextColor: positiveButtonTextColor, skipButtonTextColor: skipButtonTextColor, finalButtonText: finalButtonText)
+        }
     }
     
-    @objc public func nextTapped() {
-        onNext?()
-        self.removeFromSuperview()
+    private func findViewByIdentifier(_ identifier: String, in view: UIView) -> UIView? {
+        if view.accessibilityIdentifier == identifier {
+            return view
+        }
+        for subview in view.subviews {
+            if let found = findViewByIdentifier(identifier, in: subview) {
+                return found
+            }
+        }
+        return nil
     }
 }
